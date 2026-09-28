@@ -71,7 +71,7 @@ describe('context and cache', () => {
               href: '/about'
             }
           ],
-          serviceName: 'cdp-node-frontend-template',
+          serviceName: 'defra-atlassian-mcp-portal',
           serviceUrl: '/'
         })
       })
@@ -160,7 +160,7 @@ describe('context and cache', () => {
               href: '/about'
             }
           ],
-          serviceName: 'cdp-node-frontend-template',
+          serviceName: 'defra-atlassian-mcp-portal',
           serviceUrl: '/'
         })
       })
