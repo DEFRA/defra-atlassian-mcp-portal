@@ -1,0 +1,62 @@
+{% extends "common/layouts/hub.njk" %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+{% from "common/components/tile-grid.njk" import appTileGrid %}
+
+{#
+  The <h1> says what you can do here, not what the service is called. The
+  service name is already in the header and in the browser tab; setting it as
+  the heading too put the same three words on screen three times and left the
+  page without a heading of its own.
+#}
+{% set pageTitle = 'Home' %}
+{% set title = 'Manage your Atlassian space access' %}
+{% set description = 'Request governed access to Jira and Confluence spaces, and review the requests waiting on you.' %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <div class="govuk-inset-text app-status-panel">
+        <h2 class="govuk-heading-s">Your Atlassian connection</h2>
+        <p class="govuk-body">
+          {{ govukTag({ text: connection.tagText, classes: connection.tagClasses }) }}
+        </p>
+        {% if connection.hint %}
+          <p class="govuk-body">{{ connection.hint }}</p>
+        {% endif %}
+        {% if connection.actionHref %}
+          <p class="govuk-body">
+            <a class="govuk-link" href="{{ connection.actionHref }}">{{ connection.actionText }}</a>
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <h2 class="govuk-heading-m">What you can do</h2>
+
+  {%- set tiles = [
+    {
+      text: 'Spaces',
+      href: '/spaces',
+      description: 'Search spaces governed for MCP use, and check which products each one is approved for.'
+    },
+    {
+      text: 'Approvals to review',
+      href: '/approvals',
+      description: 'Space requests waiting for you to govern, as Information Asset Owner.',
+      count: reviewCount
+    },
+    {
+      text: 'Request a space',
+      href: '/space-requests/new',
+      description: 'Ask for a space to be approved for use with the MCP server, in Jira, Confluence or both.'
+    },
+    {
+      text: 'Access tokens',
+      href: '/account/tokens',
+      description: 'Create and manage the tokens your MCP client uses to sign in as you.'
+    }
+  ] -%}
+
+  {{ appTileGrid(tiles) }}
+{% endblock %}

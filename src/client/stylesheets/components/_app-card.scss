@@ -1,0 +1,108 @@
+@use 'govuk-frontend' as *;
+@use '../variables/colours' as *;
+
+// ===== Card =====
+// One record in a list, when a table row cannot carry enough of it.
+//
+// The approvals worklist is the case that asked for this. It was a four-column
+// table of space key, requester and date - none of which is what an Information
+// Asset Owner is deciding on. The thing they actually need, the reason the
+// requester gave, was already being loaded into the view model and thrown
+// away, because there was no room for a paragraph in a table cell. The table
+// also carried two competing links per row at identical weight, and overflowed
+// its container on a phone.
+//
+// Structurally this is the GOV.UK "document list" idiom - a heading link, a
+// line of metadata, a short body - with a status accent down the left edge.
+// Nothing here is a new visual language; it is the design system's own list
+// vocabulary applied to a record that needs three lines instead of one.
+
+.app-card-list {
+  margin: 0 0 govuk-spacing(6);
+  padding: 0;
+  list-style: none;
+}
+
+.app-card {
+  position: relative;
+  border: 1px solid $govuk-border-colour;
+  border-left: 5px solid $govuk-border-colour;
+  background-color: govuk-colour("white");
+  padding: govuk-spacing(4);
+
+  & + & {
+    margin-top: govuk-spacing(4);
+  }
+}
+
+// The accent carries the same meaning the status tag does, so the two can
+// never disagree: both are driven from `spaceStatusDisplay`.
+.app-card--pending {
+  border-left-color: govuk-colour("yellow");
+}
+
+.app-card--approved {
+  border-left-color: $defra-green;
+}
+
+.app-card--rejected {
+  border-left-color: govuk-colour("red");
+}
+
+.app-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: govuk-spacing(2);
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-card__title {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+// Only the heading is the semantic link; the pseudo-element stretches the
+// pointer target over the whole card. Same trick as `.defra-tile`, and for the
+// same reason: a screen reader gets one concise link name per record instead
+// of three.
+.app-card__link::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.app-card__meta {
+  @include govuk-font($size: 16);
+
+  color: $govuk-secondary-text-colour;
+  margin: 0 0 govuk-spacing(2);
+}
+
+// The requester's own words. Set apart from the service's copy so it reads as
+// a quotation rather than as page furniture.
+.app-card__quote {
+  margin: 0 0 govuk-spacing(2);
+  padding-left: govuk-spacing(3);
+  border-left: 3px solid $govuk-border-colour;
+  color: $govuk-text-colour;
+}
+
+.app-card__action {
+  @include govuk-font($size: 16, $weight: bold);
+
+  margin: 0;
+  color: $govuk-link-colour;
+}
+
+.app-card:hover {
+  background-color: govuk-colour("black", $variant: "tint-95");
+}
+
+.app-card:has(.app-card__link:focus-visible) {
+  box-shadow: 0 0 0 1px $govuk-focus-text-colour;
+}

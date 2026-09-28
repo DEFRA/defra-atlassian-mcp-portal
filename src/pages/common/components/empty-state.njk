@@ -1,0 +1,10 @@
+{% macro appEmptyState(text, action) %}
+  <div class="app-empty-state">
+    <p class="govuk-body">{{ text }}</p>
+    {% if action %}
+      <p class="govuk-body">
+        <a class="govuk-link" href="{{ action.href }}">{{ action.text }}</a>
+      </p>
+    {% endif %}
+  </div>
+{% endmacro %}

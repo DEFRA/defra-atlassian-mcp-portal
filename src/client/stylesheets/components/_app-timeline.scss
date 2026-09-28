@@ -1,0 +1,77 @@
+@use 'sass:math';
+@use 'govuk-frontend' as *;
+@use '../variables/colours' as *;
+
+// Space audit history. A single rule down the left with a marker per event,
+// so a two-event history still reads as a sequence rather than as two
+// unrelated blocks.
+
+$_marker-size: 13px;
+$_marker-border: 2px;
+$_rule-width: 2px;
+$_gutter: govuk-spacing(5);
+
+.app-timeline-section {
+  margin-top: govuk-spacing(7);
+}
+
+.app-timeline {
+  margin: 0;
+  padding: 0 0 0 $_gutter;
+  list-style: none;
+  border-left: $_rule-width solid $govuk-border-colour;
+}
+
+.app-timeline__event {
+  position: relative;
+  padding-bottom: govuk-spacing(6);
+}
+
+.app-timeline__event:last-child {
+  padding-bottom: 0;
+}
+
+// Centre the marker on the rule. Derived from the gutter and the marker's own
+// size rather than a magic offset, so moving the gutter keeps them aligned.
+.app-timeline__event::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: -1 * ($_gutter + math.div($_marker-size, 2) + $_marker-border - math.div($_rule-width, 2));
+  width: $_marker-size;
+  height: $_marker-size;
+  border: $_marker-border solid $defra-green;
+  border-radius: 50%;
+  background-color: govuk-colour("white");
+}
+
+.app-timeline__title {
+  margin-bottom: govuk-spacing(1);
+}
+
+.app-timeline__byline {
+  color: $govuk-secondary-text-colour;
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-timeline__detail {
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-timeline__meta {
+  margin: 0;
+  padding: govuk-spacing(2) govuk-spacing(3);
+  background-color: govuk-colour("black", $variant: "tint-95");
+}
+
+.app-timeline__meta dt {
+  font-weight: bold;
+}
+
+.app-timeline__meta dd {
+  margin: 0 0 govuk-spacing(2);
+}
+
+.app-timeline__meta dd:last-child {
+  margin-bottom: 0;
+}

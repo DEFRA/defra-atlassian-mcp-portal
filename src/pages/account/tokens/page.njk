@@ -1,0 +1,125 @@
+{% extends "common/layouts/content.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "common/components/notification.njk" import appNotification %}
+{% from "common/components/empty-state.njk" import appEmptyState %}
+{% from "common/components/token-status-tag.njk" import appTokenStatusTag %}
+
+{% set title = 'Access tokens' %}
+{% set caption = 'Your account' %}
+{% set description = 'Tokens let an MCP client such as Claude Code sign in to the MCP server as you.' %}
+{% set wideHeading = true %}
+{% set breadcrumbItems = [
+  { text: "Home", href: "/dashboard" },
+  { text: "Access tokens" }
+] %}
+{% set notesHeading = 'About access tokens' %}
+{% set notes = [
+  {
+    title: "What is a token for?",
+    html: 'An MCP client sends it on every request so the MCP server knows the request is yours. Anything the client then does, it does as you.'
+  },
+  {
+    title: "Why can't I see a token again?",
+    html: 'The MCP server stores only a one-way hash of it, never the token itself, so nobody - including this portal - can show it to you a second time. Lost one? Revoke it and generate another.'
+  },
+  {
+    title: "What should I do if a token leaks?",
+    html: 'Revoke it here. It stops working immediately, and anything using it will be signed out. Generating a replacement does not affect your other tokens.'
+  },
+  {
+    title: "Do tokens give access to new spaces?",
+    html: 'No. A token carries your own access and nothing more - a space still has to be approved for the product you are using, and you still have to be able to open it in Atlassian. <a class="govuk-link" href="/spaces">See governed spaces</a>.'
+  }
+] %}
+
+{% block beforeHeading %}
+  {# The flash set by a completed revocation. A standing fact about a token is
+     its status tag in the table; this is the thing that has just happened. #}
+  {% if revokedLabel %}
+    {{ appNotification({ type: "success", text: "“" + revokedLabel + "” has been revoked and no longer works." }) }}
+  {% endif %}
+{% endblock %}
+
+{% block columns %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      {{ govukButton({ text: "Generate a token", href: "/account/tokens/new" }) }}
+    </div>
+  </div>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {% if listError %}
+        {{ appEmptyState(
+          "We couldn't load your access tokens. Try again in a few minutes.",
+          { text: "Reload this page", href: "/account/tokens" }
+        ) }}
+      {% elif tokens.length %}
+        {# <table class="govuk-table app-table-wide">
+          <caption class="govuk-table__caption govuk-visually-hidden">
+            Your access tokens
+          </caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              {% for column in columns %}
+                <th scope="col" class="govuk-table__header">{{ column.text }}</th>
+              {% endfor %}
+              <th scope="col" class="govuk-table__header">
+                <span class="govuk-visually-hidden">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for token in tokens %}
+              <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">{{ token.label }}</th>
+                <td class="govuk-table__cell"><code class="app-token-prefix">{{ token.prefix }}…</code></td>
+                <td class="govuk-table__cell">{{ appTokenStatusTag(token.status) }}</td>
+                <td class="govuk-table__cell">{{ token.createdOn }}</td>
+                <td class="govuk-table__cell">{{ token.lastUsed }}</td>
+                <td class="govuk-table__cell">{{ token.expiresOn }}</td>
+                <td class="govuk-table__cell">
+                  {% if token.canRevoke %}
+                    <a class="govuk-link govuk-link--no-visited-state" href="/account/tokens/{{ token.id }}/revoke">
+                      Revoke<span class="govuk-visually-hidden"> {{ token.label }}</span>
+                    </a>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table> #}
+
+        <ul class="app-card-list app-cards-narrow">
+          {% for token in tokens %}
+            <li class="app-card">
+              <div class="app-card__header">
+                <h2 class="govuk-heading-s app-card__title">{{ token.label }}</h2>
+                {{ appTokenStatusTag(token.status) }}
+              </div>
+              <p class="app-card__meta">
+                <code class="app-token-prefix">{{ token.prefix }}…</code>
+              </p>
+              <p class="app-card__meta">
+                Created {{ token.createdOn }} · Last used {{ token.lastUsed }} · Expires {{ token.expiresOn }}
+              </p>
+              {% if token.canRevoke %}
+                <p class="govuk-body">
+                  <a class="govuk-link govuk-link--no-visited-state" href="/account/tokens/{{ token.id }}/revoke">
+                    Revoke<span class="govuk-visually-hidden"> {{ token.label }}</span>
+                  </a>
+                </p>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        {{ appEmptyState(
+          "You have not generated any access tokens yet.",
+          { text: "Generate a token", href: "/account/tokens/new" }
+        ) }}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

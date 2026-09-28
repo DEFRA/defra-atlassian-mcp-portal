@@ -1,2 +1,8 @@
-// import custom component styles
-@use "heading/heading";
+@use 'app-card';
+@use 'defra-check-steps';
+@use 'defra-header';
+@use 'defra-footer';
+@use 'defra-layout';
+@use 'defra-navigation'; 
+@use 'defra-service-navigation';
+@use 'defra-tiles';

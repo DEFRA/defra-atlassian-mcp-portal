@@ -1,0 +1,30 @@
+{% extends "common/layouts/content.njk" %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set title = 'Simulated Atlassian consent' %}
+{% set caption = 'Local development' %}
+{% set breadcrumbItems = [
+  { text: "Home", href: "/dashboard" },
+  { text: "Connect your Atlassian account", href: "/account/atlassian-linking" },
+  { text: "Simulated Atlassian consent" }
+] %}
+
+{% block pageBody %}
+  {{ govukWarningText({
+    text: "This is not a real Atlassian page. It stands in for Atlassian's sign-in and consent screen while linking is being simulated for local development.",
+    iconFallbackText: "Warning"
+  }) }}
+
+  <p class="govuk-body">Approving will link this account without contacting Atlassian.</p>
+
+  <div class="govuk-button-group">
+    {{ govukButton({
+      text: "Approve",
+      href: "/account/atlassian-linking/callback?code=mock-code&state=mock-state"
+    }) }}
+    <a class="govuk-link" href="/account/atlassian-linking/callback?error=access_denied">
+      Deny
+    </a>
+  </div>
+{% endblock %}

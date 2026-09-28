@@ -1,0 +1,70 @@
+{% extends "common/layouts/content.njk" %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "common/components/product-status-list.njk" import appProductStatusList %}
+
+{% set title = 'Space request submitted' %}
+
+{#
+  No breadcrumbs. This is the end of the journey - GOV.UK confirmation pages
+  drop the navigation that got you here, because the next step is one of the
+  links below, not back up the tree you just came down.
+
+  The panel is this page's heading, so it replaces the standard caption/h1.
+  The status word comes from `spaceStatusDisplay`, not from a literal: that
+  constant exists precisely so no template writes a status out by hand, and
+  this page was the one place still doing it.
+#}
+{% block heading %}
+  {{ govukPanel({
+    titleText: "Space request submitted",
+    html: "Your request is <strong>" + (spaceStatusDisplay[spaceRequest.status].label | lower) + "</strong>"
+  }) }}
+{% endblock %}
+
+{% block pageBody %}
+  <h2 class="govuk-heading-m govuk-!-margin-top-6">Request details</h2>
+
+  {{ govukSummaryList({
+    rows: [
+      {
+        key: { text: "Space key" },
+        value: { text: spaceRequest.spaceKey }
+      },
+      {
+        key: { text: "Information Asset Owner" },
+        value: { text: spaceRequest.iao }
+      }
+    ]
+  }) }}
+
+  {#
+    Each product carries its own status because each is decided on its own.
+    A single "Status" row would have to pick one of two answers.
+  #}
+  <h2 class="govuk-heading-m">Products requested</h2>
+
+  {{ appProductStatusList(spaceRequest.products) }}
+
+  <h2 class="govuk-heading-m">What happens next</h2>
+
+  <p class="govuk-body">
+    We have sent your request to {{ spaceRequest.iao }} to review as the
+    Information Asset Owner who governs access to this space.
+  </p>
+
+  <p class="govuk-body">
+    You do not need to do anything else. They decide each product separately, so
+    the space may be approved for one before the other. Once a product is
+    approved, the space can be used with the MCP server for that product by
+    anyone who already has access to it in Atlassian.
+  </p>
+
+  <p class="govuk-body">
+    <a class="govuk-link" href="/spaces/{{ spaceRequest.spaceKey | urlencode }}">Check the status of this request</a>
+  </p>
+
+  <p class="govuk-body">
+    <a class="govuk-link" href="/space-requests/new">Submit another space request</a>
+  </p>
+{% endblock %}

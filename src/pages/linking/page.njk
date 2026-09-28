@@ -1,0 +1,108 @@
+{% extends "common/layouts/content.njk" %}
+{% from "common/components/notification.njk" import appNotification %}
+{% from "common/components/check-steps.njk" import defraCheckSteps %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set linkingMessages = {
+  'success': { type: 'success', text: 'Connected successfully!' },
+  'validation_failed': { type: 'error', text: 'Security validation failed - please try again' },
+  'failed': { type: 'error', text: 'Connection failed - please try again' },
+  'cancelled': { type: 'warning', text: 'Connection cancelled - you can try again later' }
+} %}
+
+{% set checkFailureDetails = {
+  'unauthorized': 'Your Atlassian connection has either expired or been revoked. Reconnect your account to fix it.',
+  'atlassian_api_error': 'Atlassian is not responding right now. This is likely a problem on Atlassian\'s side rather than with your connection - reconnecting probably will not help, but you can try if it keeps happening.'
+} %}
+
+{% set defaultCheckFailureDetail = 'Atlassian MCP could not use your connection. Reconnect your account to fix it.' %}
+
+{% set title = 'Your Atlassian connection' %}
+{% set caption = 'Your account' %}
+{% set description = 'Connecting lets the MCP server read Jira and Confluence using your own Atlassian sign-in. The portal itself never reads your spaces.' %}
+{% set breadcrumbItems = [
+  { text: "Home", href: "/dashboard" },
+  { text: "Your Atlassian connection" }
+] %}
+{% set notesHeading = 'About your connection' %}
+{% set notes = [
+  {
+    title: "Who reads my spaces?",
+    html: 'The <strong>MCP server</strong> does, using the connection you set up here. This portal never reads a Jira or Confluence space - it is only how you connect your account, request spaces and track approvals.'
+  },
+  {
+    title: "What is this connection for?",
+    html: 'It lets the MCP server read Jira and Confluence on your behalf when an AI agent asks it to. Nothing is shared beyond what your own Atlassian account can already reach.'
+  },
+  {
+    title: "What happens when I connect?",
+    html: 'You are taken to Atlassian to sign in and approve access for the MCP server, then brought straight back here. You never enter your Atlassian password into the portal.'
+  },
+  {
+    title: "Why do I need my own Atlassian account?",
+    html: 'So that access follows the person, not the MCP server. Approving a space opens it to everyone who already has access to it in Atlassian - it never grants Atlassian access to anyone who does not.'
+  }
+] %}
+
+{% block beforeHeading %}
+  {# The flash from a just-completed OAuth round-trip, and the reason a gated
+     route sent the user here. Both are things that have just happened, which
+     is what a notification banner is for. #}
+  {{ appNotification(linkingMessages[message]) }}
+
+  {% if requiredReason %}
+    {{ appNotification({
+      type: "warning",
+      text: "You need to connect your Atlassian account to " + requiredReason + "."
+    }) }}
+  {% endif %}
+{% endblock %}
+
+{% block pageBody %}
+  <h2 class="govuk-heading-m">Connection status</h2>
+
+  {# Status only - the single action lives in the button below, so the page
+     does not offer the same link twice.
+
+     Map check failure reasons to their details before rendering steps.
+  #}
+  {% set processedSteps = [] %}
+  {% for step in steps %}
+    {% if step.checkFailureReason %}
+      {% set detail = checkFailureDetails[step.checkFailureReason] %}
+      {% if not detail %}
+        {% set detail = defaultCheckFailureDetail %}
+      {% endif %}
+      {% set _ = processedSteps.push({
+        number: step.number,
+        title: step.title,
+        status: step.status,
+        statusText: step.statusText,
+        detail: detail
+      }) %}
+    {% else %}
+      {% set _ = processedSteps.push(step) %}
+    {% endif %}
+  {% endfor %}
+  {{ defraCheckSteps({ steps: processedSteps }) }}
+
+  {% if statusError %}
+    <p class="govuk-body govuk-!-margin-top-6">
+      <a class="govuk-link" href="/account/atlassian-linking">Check your connection again</a>
+    </p>
+  {% elif needsReconnect and reconnectUrl %}
+    {# Linked, but Atlassian refused the stored token - so the page offers a way
+       out rather than leaving a red step with nothing to do about it. #}
+    {{ govukButton({
+      text: "Reconnect Atlassian account",
+      href: reconnectUrl,
+      classes: "govuk-!-margin-top-6"
+    }) }}
+  {% elif linkingUrl %}
+    {{ govukButton({
+      text: "Connect Atlassian account",
+      href: linkingUrl,
+      classes: "govuk-!-margin-top-6"
+    }) }}
+  {% endif %}
+{% endblock %}

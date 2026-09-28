@@ -1,0 +1,55 @@
+{% extends "common/layouts/content.njk" %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{#
+  The only page in the service that renders a credential.
+
+  No breadcrumbs: this is the end of a journey and the one thing the user must
+  do here is copy something before leaving. Offering two ways back up the tree
+  invites them to leave without it. The controller flashes the secret, so
+  reloading this page does not show it again - which is why the copy says so
+  in as many words rather than assuming the user knows how tokens work.
+#}
+{% set title = 'Access token generated' %}
+{% set pageTitle = 'Access token generated' %}
+
+{% block heading %}
+  {{ govukPanel({
+    titleText: "Access token generated",
+    html: "Copy it now — you will not be able to see it again"
+  }) }}
+{% endblock %}
+
+{% block pageBody %}
+  <h2 class="govuk-heading-m">Your token</h2>
+
+  <p class="govuk-body">
+    “{{ label }}”{% if expiresOn %}, which expires on {{ expiresOn }}{% endif %}.
+  </p>
+
+  <div class="app-token-secret">
+    <code>{{ secret }}</code>
+  </div>
+
+  {{ govukWarningText({
+    text: "This is the only time this token will be shown. If you lose it, revoke it and generate another.",
+    iconFallbackText: "Warning"
+  }) }}
+
+  <p class="govuk-body">Treat it like a password. Do not paste it into a shared document, a ticket or a chat message.</p>
+
+  {% if configSnippet %}
+    <h2 class="govuk-heading-m">Set up your MCP client</h2>
+
+    <p class="govuk-body">
+      Add this to your MCP client's configuration. It already contains the
+      token above.
+    </p>
+
+    <pre class="app-token-snippet"><code>{{ configSnippet }}</code></pre>
+  {% endif %}
+
+  {{ govukButton({ text: "I have copied my token", href: "/account/tokens" }) }}
+{% endblock %}

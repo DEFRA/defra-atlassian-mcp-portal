@@ -1,0 +1,16 @@
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{#
+  Renders a space request status as a coloured tag. Used by the spaces
+  directory, the space page, the approvals list and the request confirmation,
+  so a "Pending" tag is the same word and the same colour everywhere.
+
+  The wording and the colour come from `spaceStatusDisplay` in
+  `src/constants/space-statuses.js`, registered as a Nunjucks global by
+  `server/plugins/views.js`. Nothing here writes a status label out - relabel a
+  status in that one file and every tag, filter and view model follows.
+#}
+{% macro appStatusTag(status) %}
+  {%- set tag = spaceStatusDisplay[status] or unknownSpaceStatusDisplay -%}
+  {{- govukTag({ text: tag.label, classes: tag.tagClasses }) -}}
+{% endmacro %}

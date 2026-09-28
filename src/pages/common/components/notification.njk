@@ -1,0 +1,27 @@
+{% from "govuk/components/notification-banner/macro.njk" import govukNotificationBanner %}
+
+{#
+  Flash messages only - something that has just happened as a result of what
+  the user did (a link succeeded, a link was cancelled). Standing facts like
+  "your Atlassian account is connected" belong in a summary list with a status
+  tag, not in a banner.
+
+  message: { type: 'success' | 'error' | 'warning', text }
+
+  `govukNotificationBanner` handles the semantics the hand-written markup this
+  replaced got wrong: the success variant gets `role="alert"` and a green
+  border, everything else gets `role="region"` with an `aria-labelledby`
+  pointing at the "Important" title.
+#}
+{% macro appNotification(message) %}
+  {% if message %}
+    {% if message.type == "success" %}
+      {{ govukNotificationBanner({ type: "success", text: message.text }) }}
+    {% else %}
+      {{ govukNotificationBanner({
+        titleText: "Important" if message.type == "error" else "Warning",
+        text: message.text
+      }) }}
+    {% endif %}
+  {% endif %}
+{% endmacro %}

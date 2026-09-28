@@ -1,0 +1,184 @@
+@use 'govuk-frontend' as *;
+@use '../variables/colours' as *;
+
+// A Defra-green band of top-level links. Deliberately not `govukServiceNavigation`:
+// the green band is the brand, and the review-count badge below sits more
+// cleanly in markup we own. What the stock component gets right and this did
+// not - rem type, GOV.UK focus states, a tested toggle - is borrowed here
+// rather than reimplemented.
+
+.defra-service-navigation {
+  background-color: $defra-green;
+  border-top: 1px solid rgb(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgb(255, 255, 255, 0.3);
+}
+
+// See the note in `_defra-header.scss` - margins, not padding, so the first
+// nav link's text lands on the same left edge as the logo, the page heading
+// and the footer.
+.defra-service-navigation__inner {
+  @include govuk-width-container;
+}
+
+.defra-service-navigation__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: govuk-spacing(1);
+}
+
+.defra-service-navigation__item {
+  position: relative;
+}
+
+.defra-service-navigation__link {
+  @include govuk-font($size: 16);
+
+  display: flex;
+  align-items: center;
+  gap: govuk-spacing(2);
+  padding: govuk-spacing(2) govuk-spacing(3);
+  text-decoration: none;
+  border-bottom: 4px solid transparent;
+
+  &,
+  &:link,
+  &:visited {
+    color: govuk-colour("white");
+  }
+
+  &:hover {
+    color: govuk-colour("white");
+    background-color: rgb(0, 0, 0, 0.2);
+    text-decoration: none;
+    box-shadow: inset 0 -4px 0 0 $defra-light-green;
+  }
+
+  &:focus {
+    @include govuk-focused-text;
+  }
+}
+
+// Pull the first link's padding back so its text aligns with the container
+// edge while the hover area still extends to it.
+.defra-service-navigation__item:first-child .defra-service-navigation__link {
+  margin-left: govuk-spacing(3) * -1;
+}
+
+// `aria-current="page"` marks the page you are on; `aria-current="true"`
+// marks the section it lives in (`/spaces/FARM` under "Spaces"). Both get the
+// active treatment - only the assistive-technology announcement differs.
+.defra-service-navigation__link[aria-current] {
+  background-color: rgb(0, 0, 0, 0.2);
+  box-shadow: inset 0 -4px 0 0 govuk-colour("white");
+  font-weight: bold;
+
+  &:hover {
+    box-shadow: inset 0 -4px 0 0 $defra-light-green;
+  }
+
+  // Restated at higher specificity so the focus highlight beats this block's
+  // own `inset` active underline, which would otherwise win on source order.
+  &:focus {
+    @include govuk-focused-text;
+  }
+}
+
+// ===== Review count =====
+// How many items are waiting for you, shown against the nav item that leads to
+// them. A white pill with green text: 4.77:1, and it reads as part of the
+// brand band rather than as a stray GOV.UK tag. `govuk-tag`'s own colours all
+// assume a white page behind them, which this is not.
+
+.defra-service-navigation__count {
+  @include govuk-font($size: 16, $weight: bold);
+
+  display: inline-block;
+  min-width: 20px;
+  padding: 0 govuk-spacing(1);
+  border-radius: 10px;
+  background-color: govuk-colour("white");
+  color: $defra-green;
+  text-align: center;
+  line-height: 20px;
+}
+
+// ===== Mobile toggle =====
+
+.defra-service-navigation__toggle {
+  @include govuk-font($size: 16, $weight: bold);
+
+  display: none;
+  width: 100%;
+  padding: govuk-spacing(2) govuk-spacing(3);
+  margin-left: govuk-spacing(3) * -1;
+  background-color: transparent;
+  border: none;
+  color: govuk-colour("white");
+  text-align: left;
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: govuk-spacing(1);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid currentcolor;
+    vertical-align: middle;
+  }
+
+  &[aria-expanded='true']::after {
+    border-top: none;
+    border-bottom: 5px solid currentcolor;
+  }
+
+  &:hover {
+    background-color: rgb(255, 255, 255, 0.1);
+  }
+
+  &:focus {
+    @include govuk-focused-text;
+  }
+}
+
+@include govuk-media-query($until: desktop) {
+  .defra-service-navigation__toggle {
+    display: block;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .defra-service-navigation__list {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  // Only collapse the list behind the toggle once JS has actually run
+  // (govuk-frontend's template adds `js-enabled` to <body> before content
+  // renders) - otherwise a no-JS visitor would be left with a permanently
+  // `hidden` toggle button and no way to reach a hidden list.
+  .js-enabled .defra-service-navigation__list {
+    display: none;
+
+    &.defra-service-navigation__list--open {
+      display: flex;
+    }
+  }
+
+  .defra-service-navigation__item {
+    border-bottom: 1px solid rgb(255, 255, 255, 0.2);
+  }
+
+  // The desktop alignment pull would drag the link off the left edge of a
+  // stacked list.
+  .defra-service-navigation__item:first-child .defra-service-navigation__link {
+    margin-left: 0;
+  }
+}

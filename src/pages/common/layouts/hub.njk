@@ -1,0 +1,37 @@
+{% extends "common/layouts/base.njk" %}
+
+{#
+  Entry/hub layout - the AICE design language's first page mode. A full-bleed
+  Defra green hero, then tiles or cards. Reserved for pages that introduce the
+  service rather than present detail: the sign-in page and the home page.
+
+  Variables:
+    title        string  required  the <h1>, rendered white inside the hero
+    description  string  optional  lead paragraph below the <h1>
+    pageTitle    string  optional  browser tab text; defaults to `title`
+
+  Blocks:
+    heroAside    optional  fills a one-third column beside the hero text
+    content      required  page body, inside `govuk-width-container`
+#}
+
+{% set pageTitle = pageTitle if pageTitle else title %}
+
+{% block bleed %}
+  <div class="defra-hero">
+    <div class="defra-width-container">
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          <h1 class="govuk-heading-xl">{{ title }}</h1>
+          {% if description %}
+            <p class="govuk-body-l">{{ description }}</p>
+          {% endif %}
+          {% block heroActions %}{% endblock %}
+        </div>
+        <div class="govuk-grid-column-one-third">
+          {% block heroAside %}{% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

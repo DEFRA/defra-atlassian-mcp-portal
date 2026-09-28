@@ -1,0 +1,37 @@
+{#
+  The AICE tile grid - the way a hub page presents its set of onward links.
+
+  tiles: [{ text, href, description, count }]
+
+  Only the heading is a semantic link; `.defra-tile__link::after` stretches the
+  click target across the whole tile, so screen readers get a concise link name
+  while pointer users get the full card.
+
+  The link carries `govuk-link` so it takes its colour, hover and focus states
+  from the real component rather than from hand-copied hexes - which had drifted
+  a whole rebrand behind the links beside them. `--no-visited-state` because
+  these are the service's standing entry points: a hub whose tiles are all
+  purple on second visit tells the user nothing.
+
+  `count`, if set, renders as a tag after the tile heading - see `appNavCount`
+  in the layout for the same idea in the navigation.
+#}
+{% macro appTileGrid(tiles) %}
+  <ul class="defra-tile-grid">
+    {% for tile in tiles %}
+      <li>
+        <div class="defra-tile">
+          <h3 class="govuk-heading-s defra-tile__title">
+            <a class="govuk-link govuk-link--no-visited-state defra-tile__link" href="{{ tile.href }}">{{ tile.text }}</a>
+          </h3>
+          {% if tile.count %}
+            <p class="defra-tile__count">
+              <strong class="govuk-tag govuk-tag--red">{{ tile.count }} waiting</strong>
+            </p>
+          {% endif %}
+          <p class="govuk-body-s defra-tile__body">{{ tile.description }}</p>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% endmacro %}

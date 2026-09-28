@@ -1,0 +1,45 @@
+{% extends "common/layouts/base.njk" %}
+{% from "govuk/components/breadcrumbs/macro.njk" import govukBreadcrumbs %}
+{% from "common/components/notes.njk" import appNotes %}
+
+{% set pageTitle = pageTitle if pageTitle else title %}
+{% set _headingColumn = "govuk-grid-column-full" if wideHeading else "govuk-grid-column-two-thirds" %}
+
+{% block beforeContent %}
+  {% if breadcrumbItems and breadcrumbItems.length %}
+    {{ govukBreadcrumbs({ items: breadcrumbItems }) }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="{{ _headingColumn }}">
+      {% block beforeHeading %}{% endblock %}
+      {% block heading %}
+        {% if caption %}
+          <span class="govuk-caption-l">{{ caption }}</span>
+        {% endif %}
+        <h1 class="govuk-heading-l">{{ title }}</h1>
+        {% if description %}
+          <p class="govuk-body">{{ description }}</p>
+        {% endif %}
+      {% endblock %}
+    </div>
+  </div>
+
+  {% block columns %}
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        {% block pageBody %}{% endblock %}
+      </div>
+    </div>
+  {% endblock %}
+
+  {% if notes %}
+    <div class="govuk-grid-row">
+      <div class="{{ _headingColumn }}">
+        {{ appNotes(notes, notesHeading) }}
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}

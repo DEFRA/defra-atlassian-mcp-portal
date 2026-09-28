@@ -1,0 +1,43 @@
+{% extends "common/layouts/content.njk" %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/warning-text/macro.njk" import govukWarningText %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set title = 'Are you sure you want to revoke this token?' %}
+{% set caption = 'Access tokens' %}
+{% set pageTitle = 'Revoke an access token' %}
+{% set breadcrumbItems = [
+  { text: "Home", href: "/dashboard" },
+  { text: "Access tokens", href: "/account/tokens" },
+  { text: "Revoke an access token" }
+] %}
+
+{% block pageBody %}
+  {#
+    The token is named, dated and prefixed rather than just named, because a
+    user with several tokens called "laptop" needs something to tell them
+    apart, and revoking the wrong one silently breaks a working client.
+  #}
+  {{ govukSummaryList({
+    rows: [
+      { key: { text: "Name" }, value: { text: label } },
+      { key: { text: "Token" }, value: { html: '<code class="app-token-prefix">' + prefix + '…</code>' } },
+      { key: { text: "Created" }, value: { text: createdOn } },
+      { key: { text: "Last used" }, value: { text: lastUsed } }
+    ]
+  }) }}
+
+  {{ govukWarningText({
+    text: "Revoking is immediate and cannot be undone. Any MCP client still using this token will stop working.",
+    iconFallbackText: "Warning"
+  }) }}
+
+  <form method="post" novalidate>
+    <input type="hidden" name="label" value="{{ label }}">
+
+    <div class="govuk-button-group">
+      {{ govukButton({ text: "Revoke token", classes: "govuk-button--warning" }) }}
+      {{ govukButton({ text: "Cancel", href: "/account/tokens", classes: "govuk-button--secondary" }) }}
+    </div>
+  </form>
+{% endblock %}

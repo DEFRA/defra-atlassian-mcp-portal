@@ -1,0 +1,49 @@
+{% extends "common/layouts/hub.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set title = 'Sign in to the Atlassian MCP Portal' %}
+{% set description = 'Use the portal to manage the Atlassian connection the MCP server uses, and to request governed access to spaces.' %}
+
+{% block heroActions %}
+  {#
+    `govukButton` rather than a hand-written <a class="govuk-button">. A link
+    styled as a button needs `role="button"` and `data-module="govuk-button"`
+    for the space bar to activate it, which the component adds and the markup
+    here did not - so this button, and every other one in the service, was
+    keyboard-operable by Enter only.
+  #}
+  {{ govukButton({
+    text: "Sign in with your Defra account",
+    href: "/login/callback",
+    isStartButton: true,
+    classes: "defra-hero__button"
+  }) }}
+
+  <p class="govuk-body">
+    This is an internal service. You need a Defra account to sign in.
+  </p>
+{% endblock %}
+
+{% block heroAside %}
+  <aside class="defra-hero__whats-new">
+    <h2 class="govuk-heading-s">What you can do</h2>
+    <ul class="govuk-list govuk-list--bullet">
+      <li>Connect your Atlassian account for the MCP server to use</li>
+      <li>Request governed access to Jira and Confluence spaces</li>
+      <li>Track the status of your space requests</li>
+    </ul>
+  </aside>
+{% endblock %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h2 class="govuk-heading-m">If you cannot sign in</h2>
+
+      <p class="govuk-body">
+        Email the AI Capability and Enablement team at
+        <a class="govuk-link" href="mailto:AICapabilityAndEnablement@defra.gov.uk">AICapabilityAndEnablement@defra.gov.uk</a>.
+      </p>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "common/components/status-tag.njk" import appStatusTag %}
+
+{#
+  Renders one row per Atlassian product, each with its own status tag.
+
+  A space is approved for Jira and for Confluence independently, so there is no
+  single status that tells the whole truth about a request. Every page that
+  shows a request's standing - the confirmation page now, the approvals list
+  when it is built - shows the products the same way, from here.
+
+  Takes the `products` list a view model builds
+  (`[{ code, label, status, requested }]`), not the raw upstream map, so the
+  ordering and the labels are settled before a template sees them.
+#}
+{% macro appProductStatusList(products) %}
+  {%- set rows = [] -%}
+  {%- for product in products -%}
+    {%- set rows = (rows.push({
+      key: { text: product.label },
+      value: { html: appStatusTag(product.status) }
+    }), rows) -%}
+  {%- endfor -%}
+  {{ govukSummaryList({ rows: rows }) }}
+{% endmacro %}

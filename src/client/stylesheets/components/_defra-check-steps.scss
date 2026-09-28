@@ -1,0 +1,105 @@
+@use 'govuk-frontend' as *;
+@use '../variables/colours' as *;
+
+// Imported from the AICE prototype:
+// https://github.com/DEFRA/mcp-portal/blob/mcp-portal-prototype/src/client/stylesheets/components/_defra-check-steps.scss
+//
+// It no longer tracks that source line-for-line. The palette and type here were
+// hardcoded hexes and px sizes copied out of an older GOV.UK Frontend, which
+// left the component a rebrand behind the components beside it and unable to
+// respond to a browser font-size setting. Both now come from govuk-frontend.
+
+$_circle-size: 32px;
+$_line-width: 2px;
+
+.defra-check-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.defra-check-steps__item {
+  display: grid;
+  grid-template-columns: $_circle-size 1fr;
+  column-gap: govuk-spacing(3);
+  position: relative;
+}
+
+// Extend the indicator column to draw the connecting line beneath the circle
+.defra-check-steps__indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.defra-check-steps__circle {
+  @include govuk-font($size: 16, $weight: bold);
+
+  width: $_circle-size;
+  height: $_circle-size;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid $govuk-border-colour;
+  color: $govuk-secondary-text-colour;
+  background: govuk-colour("white");
+
+  &--confirmed,
+  &--linked,
+  &--working {
+    background-color: $defra-green;
+    border-color: $defra-green;
+    color: govuk-colour("white");
+  }
+
+  &--issue {
+    border-color: govuk-colour("red");
+    color: govuk-colour("red");
+    background: govuk-colour("white");
+  }
+}
+
+.defra-check-steps__line {
+  flex: 1;
+  width: $_line-width;
+  background-color: $govuk-border-colour;
+  margin-top: govuk-spacing(1);
+  margin-bottom: 0;
+}
+
+.defra-check-steps__item:last-child .defra-check-steps__line {
+  display: none;
+}
+
+.defra-check-steps__content {
+  padding-bottom: govuk-spacing(5);
+}
+
+.defra-check-steps__item:last-child .defra-check-steps__content {
+  padding-bottom: 0;
+}
+
+.defra-check-steps__title {
+  @include govuk-font($size: 19, $weight: bold);
+
+  margin: 0 0 govuk-spacing(1);
+
+  // Match the circle so the first line of the title sits on its centre. Long
+  // titles wrap to normal leading rather than inheriting the 32px.
+  min-height: $_circle-size;
+  display: flex;
+  align-items: center;
+}
+
+.defra-check-steps__status {
+  margin: 0;
+}
+
+// A line of explanation under a step's tag, for saying what a grey step is
+// waiting on.
+.defra-check-steps__detail {
+  margin: govuk-spacing(1) 0 0;
+  color: $govuk-secondary-text-colour;
+}

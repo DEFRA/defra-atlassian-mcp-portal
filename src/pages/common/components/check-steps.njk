@@ -1,0 +1,56 @@
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{#
+  Numbered vertical step list with a status tag per step, for showing how far
+  through a sequence of access checks a user is.
+
+  Imported from the AICE prototype:
+  https://github.com/DEFRA/mcp-portal/blob/mcp-portal-prototype/src/pages/common/check-steps.njk
+
+  params.steps: [{ number, title, href, status, statusText, detail }]
+    status drives the circle fill and the tag colour - `confirmed`, `working`
+    and `linked` are green, `issue` is red, and anything else (including the
+    `not-checked` default) is grey. The statuses actually emitted are in
+    `stepStatuses` in `pages/linking/view-model.js`.
+
+  Each step's title is a heading, so the sequence can be navigated by heading
+  rather than read as three unlabelled paragraphs. The circled number is
+  decorative - it is `aria-hidden`, and a visually hidden "Step n of n" carries
+  the position instead, which is the part a screen reader actually needs.
+#}
+{% macro defraCheckSteps(params) %}
+  {%- set steps = params.steps if params.steps else [] %}
+  <ol class="defra-check-steps">
+    {% for step in steps %}
+      {%- set status = step.status if step.status else 'not-checked' %}
+      <li class="defra-check-steps__item">
+        <div class="defra-check-steps__indicator" aria-hidden="true">
+          <div class="defra-check-steps__circle defra-check-steps__circle--{{ status }}">{{ step.number }}</div>
+          <div class="defra-check-steps__line"></div>
+        </div>
+        <div class="defra-check-steps__content">
+          <h3 class="defra-check-steps__title">
+            <span class="govuk-visually-hidden">Step {{ loop.index }} of {{ steps.length }}: </span>
+            {%- if step.href %}
+              <a class="govuk-link" href="{{ step.href }}">{{ step.title }}</a>
+            {%- else %}
+              {{ step.title }}
+            {%- endif %}
+          </h3>
+          <p class="defra-check-steps__status">
+            {%- if status == 'confirmed' or status == 'working' or status == 'linked' %}
+              {{ govukTag({ text: step.statusText, classes: "govuk-tag--green" }) }}
+            {%- elif status == 'issue' %}
+              {{ govukTag({ text: step.statusText, classes: "govuk-tag--red" }) }}
+            {%- else %}
+              {{ govukTag({ text: step.statusText, classes: "govuk-tag--grey" }) }}
+            {%- endif %}
+          </p>
+          {% if step.detail %}
+            <p class="govuk-body-s defra-check-steps__detail">{{ step.detail }}</p>
+          {% endif %}
+        </div>
+      </li>
+    {% endfor %}
+  </ol>
+{% endmacro %}

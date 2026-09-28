@@ -1,0 +1,496 @@
+{
+  "uuid": "8631415c-badd-4bcb-88ba-1ebb51adac5a",
+  "lastMigration": 32,
+  "name": "Atlassian MCP mock",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 8085,
+  "hostname": "0.0.0.0",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "3ded8d9c-c699-4f5b-bc96-8a7a862e2390",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "approvals/spaces",
+      "responses": [
+        {
+          "uuid": "e5e14ecd-a874-4135-9513-9d741cd1d2d0",
+          "body": "{{#if (find (dataRaw 'spaceKeys') (bodyRaw 'spaceKey'))}}{{status 409}}{{else}}{{status 201}}{{setVar 'nid' (uuid)}}{{setData 'push' 'spaceKeys' '' (bodyRaw 'spaceKey')}}{{#if (find (bodyRaw 'products') 'jira')}}{{#if (find (bodyRaw 'products') 'confluence')}}{{setData 'set' 'approvals' (getVar 'nid') (object id=(getVar 'nid') spaceKey=(bodyRaw 'spaceKey') name='' userId=(header 'X-User-Id') iao=(bodyRaw 'iao') reason=(bodyRaw 'reason') products=(object jira=(object requested=true status='pending' reviewerId='' decisionReason='' decidedAt='') confluence=(object requested=true status='pending' reviewerId='' decisionReason='' decidedAt='')) dataHandlingFormRef='' riskAssessmentRef='' createdAt=(now))}}{{else}}{{setData 'set' 'approvals' (getVar 'nid') (object id=(getVar 'nid') spaceKey=(bodyRaw 'spaceKey') name='' userId=(header 'X-User-Id') iao=(bodyRaw 'iao') reason=(bodyRaw 'reason') products=(object jira=(object requested=true status='pending' reviewerId='' decisionReason='' decidedAt='') confluence=(object requested=false status='not-requested' reviewerId='' decisionReason='' decidedAt='')) dataHandlingFormRef='' riskAssessmentRef='' createdAt=(now))}}{{/if}}{{else}}{{setData 'set' 'approvals' (getVar 'nid') (object id=(getVar 'nid') spaceKey=(bodyRaw 'spaceKey') name='' userId=(header 'X-User-Id') iao=(bodyRaw 'iao') reason=(bodyRaw 'reason') products=(object jira=(object requested=false status='not-requested' reviewerId='' decisionReason='' decidedAt='') confluence=(object requested=true status='pending' reviewerId='' decisionReason='' decidedAt='')) dataHandlingFormRef='' riskAssessmentRef='' createdAt=(now))}}{{/if}}{{{stringify (dataRaw 'approvals' (getVar 'nid'))}}}{{/if}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "c0e15617-3540-4e66-ab31-c564501abaf5",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "approvals/spaces/:spaceKey",
+      "responses": [
+        {
+          "uuid": "15e38ce3-b269-4fe3-af8c-5354a3262a00",
+          "body": "{{status 404}}{{#each (dataRaw 'approvals')}}{{#if (eq this.spaceKey (urlParam 'spaceKey'))}}{{status 200}}{{{stringify this}}}{{/if}}{{/each}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "0a0a1308-1b87-4508-9538-cc12b011e766",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "admin/access-requests",
+      "responses": [
+        {
+          "uuid": "f08820dc-3a9e-4890-8216-609ec6b220a2",
+          "body": "[{{#each (dataRaw 'approvals')}}{{#unless @first}},{{/unless}}{{{stringify this}}}{{/each}}]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "718d3738-7e0b-4595-a91b-17a3dcb6ee9b",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "admin/access-requests/:requestId/approve",
+      "responses": [
+        {
+          "uuid": "873278a6-0ba3-4dde-9966-8aad79a28d3c",
+          "body": "{{status 404}}{{#each (dataRaw 'approvals')}}{{#if (eq this.id (urlParam 'requestId'))}}{{#if (eq (bodyRaw 'product') 'jira')}}{{#if (eq this.products.jira.status 'pending')}}{{status 200}}{{setData 'set' 'approvals' this.id (object id=this.id spaceKey=this.spaceKey name=this.name userId=this.userId iao=this.iao reason=this.reason products=(object jira=(object requested=true status='approved' reviewerId=(header 'X-User-Id') decisionReason=(bodyRaw 'decisionReason') decidedAt=(now)) confluence=this.products.confluence) dataHandlingFormRef=(bodyRaw 'dataHandlingFormRef') riskAssessmentRef=(bodyRaw 'riskAssessmentRef') createdAt=this.createdAt)}}{{{stringify (dataRaw 'approvals' this.id)}}}{{else}}{{status 409}}{{/if}}{{else}}{{#if (eq this.products.confluence.status 'pending')}}{{status 200}}{{setData 'set' 'approvals' this.id (object id=this.id spaceKey=this.spaceKey name=this.name userId=this.userId iao=this.iao reason=this.reason products=(object jira=this.products.jira confluence=(object requested=true status='approved' reviewerId=(header 'X-User-Id') decisionReason=(bodyRaw 'decisionReason') decidedAt=(now))) dataHandlingFormRef=(bodyRaw 'dataHandlingFormRef') riskAssessmentRef=(bodyRaw 'riskAssessmentRef') createdAt=this.createdAt)}}{{{stringify (dataRaw 'approvals' this.id)}}}{{else}}{{status 409}}{{/if}}{{/if}}{{/if}}{{/each}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "5fffa5f2-124e-44b3-afe7-5f72699146c3",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "admin/access-requests/:requestId/reject",
+      "responses": [
+        {
+          "uuid": "5a90c67a-02d7-4a5b-b1be-1604ca82fc9f",
+          "body": "{{status 404}}{{#each (dataRaw 'approvals')}}{{#if (eq this.id (urlParam 'requestId'))}}{{#if (eq (bodyRaw 'product') 'jira')}}{{#if (eq this.products.jira.status 'pending')}}{{status 200}}{{setData 'set' 'approvals' this.id (object id=this.id spaceKey=this.spaceKey name=this.name userId=this.userId iao=this.iao reason=this.reason products=(object jira=(object requested=true status='rejected' reviewerId=(header 'X-User-Id') decisionReason=(bodyRaw 'decisionReason') decidedAt=(now)) confluence=this.products.confluence) dataHandlingFormRef=(bodyRaw 'dataHandlingFormRef') riskAssessmentRef=(bodyRaw 'riskAssessmentRef') createdAt=this.createdAt)}}{{{stringify (dataRaw 'approvals' this.id)}}}{{else}}{{status 409}}{{/if}}{{else}}{{#if (eq this.products.confluence.status 'pending')}}{{status 200}}{{setData 'set' 'approvals' this.id (object id=this.id spaceKey=this.spaceKey name=this.name userId=this.userId iao=this.iao reason=this.reason products=(object jira=this.products.jira confluence=(object requested=true status='rejected' reviewerId=(header 'X-User-Id') decisionReason=(bodyRaw 'decisionReason') decidedAt=(now))) dataHandlingFormRef=(bodyRaw 'dataHandlingFormRef') riskAssessmentRef=(bodyRaw 'riskAssessmentRef') createdAt=this.createdAt)}}{{{stringify (dataRaw 'approvals' this.id)}}}{{else}}{{status 409}}{{/if}}{{/if}}{{/if}}{{/each}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "b0de101d-8db0-43c7-9115-7d3048f34b7a",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "tokens",
+      "responses": [
+        {
+          "uuid": "2857b01a-f549-477a-a16a-e32968449c3b",
+          "body": "{{setVar 'nid' (uuid)}}{{setVar 'secret' (concat 'amcp_' (faker 'string.alphanumeric' 43))}}{{setVar 'prefix' (concat 'amcp_' (faker 'string.alphanumeric' 8))}}{{setData 'set' 'tokens' (getVar 'nid') (object id=(getVar 'nid') user_id=(header 'X-User-Id') label=(bodyRaw 'label') prefix=(getVar 'prefix') created_at=(now) expires_at=(concat (faker 'date.soon' days=(bodyRaw 'ttl_days')) '') last_used_at='' revoked_at='')}}{{status 201}}{{{stringify (object id=(getVar 'nid') token=(getVar 'secret') label=(bodyRaw 'label') expires_at=(data 'tokens' (concat (getVar 'nid') '.expires_at')))}}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "3e9ce4a1-3a07-4d83-91c6-1d66a6123124",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "tokens",
+      "responses": [
+        {
+          "uuid": "ff524c10-bd5f-439d-9835-e54bd431041c",
+          "body": "[{{setVar 'wrote' false}}{{#each (dataRaw 'tokens')}}{{#if (eq this.user_id (header 'X-User-Id'))}}{{#if (getVar 'wrote')}},{{/if}}{{{stringify this}}}{{setVar 'wrote' true}}{{/if}}{{/each}}]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "9c29876e-0fc7-4fcd-ade6-fb5596f02399",
+      "type": "http",
+      "documentation": "",
+      "method": "delete",
+      "endpoint": "tokens/:tokenId",
+      "responses": [
+        {
+          "uuid": "dd3d1270-949f-4373-a097-0c161f9a7bf9",
+          "body": "{{status 404}}{{#each (dataRaw 'tokens')}}{{#if (eq this.id (urlParam 'tokenId'))}}{{#if (eq this.user_id (header 'X-User-Id'))}}{{status 204}}{{setData 'set' 'tokens' this.id (object id=this.id user_id=this.user_id label=this.label prefix=this.prefix created_at=this.created_at expires_at=this.expires_at last_used_at=this.last_used_at revoked_at=(now))}}{{/if}}{{/if}}{{/each}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "aac988b6-b591-44c3-b2d9-2c7aaa825f90",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "linking/authorization-url",
+      "responses": [
+        {
+          "uuid": "f7388048-aa93-43bc-a08c-57864d930417",
+          "body": "{\"authorizationUrl\": \"/account/atlassian-linking/mock-consent\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "382a9ca3-7f3f-4e90-8c3e-7a22026d5137",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "linking/status",
+      "responses": [
+        {
+          "uuid": "79d29254-222d-468f-8d86-b50b1952bfb2",
+          "body": "{\"linked\": {{#if (find (dataRaw 'linking') (header 'X-User-Id'))}}true{{else}}false{{/if}} }",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "154a8d09-4d46-429e-88f0-2aa87b185c8c",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "linking/callback",
+      "responses": [
+        {
+          "uuid": "8a9ad2ff-3f11-432f-a7aa-f00d912bc2fd",
+          "body": "{{setData 'push' 'linking' '' (header 'X-User-Id')}}{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "28054c4c-5153-481f-996b-af540783f4a7",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "linking/test-connection",
+      "responses": [
+        {
+          "uuid": "4dd5cf56-6d2f-40a4-b6b6-8013322beeeb",
+          "body": "{{#if (find (dataRaw 'linking') (header 'X-User-Id'))}}{\"status\": \"success\", \"profile\": {\"id\": \"mock-atlassian-user\", \"email\": \"{{header 'X-User-Id'}}\", \"displayName\": \"Dev User\"}}{{else}}{\"status\": \"error\", \"reason\": \"No Atlassian account is connected.\"}{{/if}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "3ded8d9c-c699-4f5b-bc96-8a7a862e2390"
+    },
+    {
+      "type": "route",
+      "uuid": "c0e15617-3540-4e66-ab31-c564501abaf5"
+    },
+    {
+      "type": "route",
+      "uuid": "0a0a1308-1b87-4508-9538-cc12b011e766"
+    },
+    {
+      "type": "route",
+      "uuid": "718d3738-7e0b-4595-a91b-17a3dcb6ee9b"
+    },
+    {
+      "type": "route",
+      "uuid": "5fffa5f2-124e-44b3-afe7-5f72699146c3"
+    },
+    {
+      "type": "route",
+      "uuid": "b0de101d-8db0-43c7-9115-7d3048f34b7a"
+    },
+    {
+      "type": "route",
+      "uuid": "3e9ce4a1-3a07-4d83-91c6-1d66a6123124"
+    },
+    {
+      "type": "route",
+      "uuid": "9c29876e-0fc7-4fcd-ade6-fb5596f02399"
+    },
+    {
+      "type": "route",
+      "uuid": "aac988b6-b591-44c3-b2d9-2c7aaa825f90"
+    },
+    {
+      "type": "route",
+      "uuid": "382a9ca3-7f3f-4e90-8c3e-7a22026d5137"
+    },
+    {
+      "type": "route",
+      "uuid": "154a8d09-4d46-429e-88f0-2aa87b185c8c"
+    },
+    {
+      "type": "route",
+      "uuid": "28054c4c-5153-481f-996b-af540783f4a7"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [
+    {
+      "uuid": "77bc5d62-dd6a-4042-b086-c3f7e98b9f03",
+      "id": "approvals",
+      "name": "approvals",
+      "documentation": "",
+      "value": "{\"mock-req-1\": {\"id\": \"mock-req-1\", \"spaceKey\": \"FLOOD\", \"name\": \"Flood risk service mapping\", \"userId\": \"dev@example.com\", \"iao\": \"iao.one@defra.gov.uk\", \"reason\": \"Mapping the flood risk service for the AI capability review.\", \"products\": {\"jira\": {\"requested\": true, \"status\": \"approved\", \"reviewerId\": \"iao.one@defra.gov.uk\", \"decisionReason\": \"No personal data. Approved for MCP use.\", \"decidedAt\": \"2026-07-16T14:03:00.000Z\"}, \"confluence\": {\"requested\": true, \"status\": \"approved\", \"reviewerId\": \"iao.one@defra.gov.uk\", \"decisionReason\": \"No personal data. Approved for MCP use.\", \"decidedAt\": \"2026-07-16T14:03:00.000Z\"}}, \"dataHandlingFormRef\": \"DHF-2026-041\", \"riskAssessmentRef\": \"RA-2026-018\", \"createdAt\": \"2026-07-14T09:12:00.000Z\"}, \"mock-req-2\": {\"id\": \"mock-req-2\", \"spaceKey\": \"FARM\", \"name\": \"Farming payments discovery\", \"userId\": \"dev@example.com\", \"iao\": \"iao.two@defra.gov.uk\", \"reason\": \"Summarising discovery findings for the farming payments team.\", \"products\": {\"jira\": {\"requested\": true, \"status\": \"pending\", \"reviewerId\": \"\", \"decisionReason\": \"\", \"decidedAt\": \"\"}, \"confluence\": {\"requested\": true, \"status\": \"pending\", \"reviewerId\": \"\", \"decisionReason\": \"\", \"decidedAt\": \"\"}}, \"dataHandlingFormRef\": \"\", \"riskAssessmentRef\": \"\", \"createdAt\": \"2026-08-21T11:40:00.000Z\"}, \"mock-req-3\": {\"id\": \"mock-req-3\", \"spaceKey\": \"WASTE\", \"name\": \"Waste tracking retrospective\", \"userId\": \"dev@example.com\", \"iao\": \"iao.one@defra.gov.uk\", \"reason\": \"Pulling actions out of the team retrospective space.\", \"products\": {\"jira\": {\"requested\": true, \"status\": \"rejected\", \"reviewerId\": \"iao.one@defra.gov.uk\", \"decisionReason\": \"Holds unredacted supplier contact details.\", \"decidedAt\": \"2026-06-04T10:20:00.000Z\"}, \"confluence\": {\"requested\": true, \"status\": \"rejected\", \"reviewerId\": \"iao.one@defra.gov.uk\", \"decisionReason\": \"Holds unredacted supplier contact details.\", \"decidedAt\": \"2026-06-04T10:20:00.000Z\"}}, \"dataHandlingFormRef\": \"\", \"riskAssessmentRef\": \"\", \"createdAt\": \"2026-06-02T08:05:00.000Z\"}, \"mock-req-4\": {\"id\": \"mock-req-4\", \"spaceKey\": \"AIRQ\", \"name\": \"Air quality monitoring\", \"userId\": \"dev@example.com\", \"iao\": \"iao.one@defra.gov.uk\", \"reason\": \"Reading air quality tickets alongside the published monitoring pages.\", \"products\": {\"jira\": {\"requested\": true, \"status\": \"approved\", \"reviewerId\": \"iao.one@defra.gov.uk\", \"decisionReason\": \"Ticket data only. Approved.\", \"decidedAt\": \"2026-08-27T13:15:00.000Z\"}, \"confluence\": {\"requested\": true, \"status\": \"pending\", \"reviewerId\": \"\", \"decisionReason\": \"\", \"decidedAt\": \"\"}}, \"dataHandlingFormRef\": \"DHF-2026-058\", \"riskAssessmentRef\": \"\", \"createdAt\": \"2026-08-25T15:30:00.000Z\"}, \"mock-req-5\": {\"id\": \"mock-req-5\", \"spaceKey\": \"MARINE\", \"name\": \"Marine licensing handbook\", \"userId\": \"someone.else@defra.gov.uk\", \"iao\": \"iao.two@defra.gov.uk\", \"reason\": \"Drafting the marine licensing handbook with an AI assistant.\", \"products\": {\"jira\": {\"requested\": false, \"status\": \"not-requested\", \"reviewerId\": \"\", \"decisionReason\": \"\", \"decidedAt\": \"\"}, \"confluence\": {\"requested\": true, \"status\": \"pending\", \"reviewerId\": \"\", \"decisionReason\": \"\", \"decidedAt\": \"\"}}, \"dataHandlingFormRef\": \"\", \"riskAssessmentRef\": \"\", \"createdAt\": \"2026-08-29T09:00:00.000Z\"}}"
+    },
+    {
+      "uuid": "dac34b34-bf5d-469a-b297-fabb5bae1814",
+      "id": "spaceKeys",
+      "name": "spaceKeys",
+      "documentation": "",
+      "value": "[\"FLOOD\", \"FARM\", \"WASTE\", \"AIRQ\", \"MARINE\"]"
+    },
+    {
+      "uuid": "6207513e-67cc-48c6-a3c9-5eb1dd1c569f",
+      "id": "tokens",
+      "name": "tokens",
+      "documentation": "",
+      "value": "{}"
+    },
+    {
+      "uuid": "4a1eaf7a-c51c-4035-ba0c-6a4d59c0bdcc",
+      "id": "linking",
+      "name": "linking",
+      "documentation": "",
+      "value": "[]"
+    }
+  ],
+  "callbacks": []
+}

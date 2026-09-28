@@ -1,0 +1,86 @@
+@use 'sass:color';
+@use 'govuk-frontend' as *;
+@use '../variables/colours' as *;
+
+// The hero needs a width container that is not `.govuk-width-container`,
+// because it sits inside a full-bleed green band. It must measure the same,
+// though - so it is the same mixin, not a re-derivation of it.
+.defra-width-container {
+  @include govuk-width-container;
+}
+
+// Full-bleed brand bands are rendered *outside* `govuk-width-container` by
+// `common/layouts/base.njk`'s `container` block override, so they span the
+// viewport without needing the `width: 100vw` / `translateX(-50%)` trick -
+// which in turn means no `overflow-x: hidden` on `html`/`body`, so
+// `position: sticky` still works.
+.defra-hero {
+  background-color: $defra-green;
+  color: govuk-colour("white");
+  padding: govuk-spacing(7) 0;
+}
+
+.defra-hero .govuk-heading-xl,
+.defra-hero .govuk-caption-xl,
+.defra-hero .govuk-body-l,
+.defra-hero .govuk-body {
+  color: govuk-colour("white");
+}
+
+.defra-hero .govuk-heading-xl:last-child,
+.defra-hero .govuk-body-l:last-child,
+.defra-hero .govuk-body:last-child {
+  margin-bottom: 0;
+}
+
+.defra-hero__whats-new {
+  border: 1px solid rgb(255, 255, 255, 0.6);
+  padding: govuk-spacing(4);
+  background-color: transparent;
+}
+
+.defra-hero__whats-new,
+.defra-hero__whats-new * {
+  color: govuk-colour("white");
+}
+
+.defra-hero__button {
+  background-color: govuk-colour("white");
+  box-shadow: 0 2px 0 color.adjust(govuk-colour("white"), $lightness: -15%);
+}
+
+// GOV.UK Frontend's button styles set colour on `.govuk-button:link`,
+// `:visited` and `:hover` (specificity 0,2,0), which beats a plain
+// `.defra-hero__button { color: ... }` rule (0,1,0) regardless of source
+// order - so the override has to match those pseudo-classes directly.
+.defra-hero__button,
+.defra-hero__button:link,
+.defra-hero__button:visited,
+.defra-hero__button:hover {
+  color: $defra-green;
+}
+
+.defra-hero__button:hover {
+  background-color: color.adjust(govuk-colour("white"), $lightness: -5%);
+}
+
+// ===== Notes =====
+// Explanatory copy about how a page works, below the content it explains.
+// Rendered as a stack of insets when there are one or two, and as an accordion
+// once there are three or more - see `common/macros/notes.njk`.
+
+.app-notes {
+  margin-top: govuk-spacing(7);
+}
+
+.app-notes__note + .app-notes__note {
+  margin-top: govuk-spacing(4);
+}
+
+.app-notes__note .govuk-heading-s {
+  margin-bottom: govuk-spacing(2);
+}
+
+.app-notes__note > :last-child {
+  margin-bottom: 0;
+}

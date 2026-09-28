@@ -1,0 +1,19 @@
+{
+  "src/client/javascripts/application.js": {
+    "file": "assets/application-Bg4qT4NN.js",
+    "name": "application",
+    "src": "src/client/javascripts/application.js",
+    "isEntry": true
+  },
+  "src/client/stylesheets/application.scss": {
+    "file": "assets/applicationCss-hc2psTaB.css",
+    "name": "applicationCss",
+    "src": "src/client/stylesheets/application.scss",
+    "isEntry": true
+  },
+  "node_modules/govuk-frontend/dist/govuk/assets/images/favicon.svg": {
+    "file": "assets/favicon-ByS9MO14.svg",
+    "src": "node_modules/govuk-frontend/dist/govuk/assets/images/favicon.svg"
+  },
+  "application.js": "javascripts/application.abc123.js"
+}

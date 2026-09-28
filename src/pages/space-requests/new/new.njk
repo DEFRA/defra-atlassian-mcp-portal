@@ -1,0 +1,102 @@
+{% extends "common/layouts/content.njk" %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/checkboxes/macro.njk" import govukCheckboxes %}
+{% from "govuk/components/character-count/macro.njk" import govukCharacterCount %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set title = 'Request an Atlassian space' %}
+{% set caption = 'Space requests' %}
+{% set description = 'Ask for governed access to a space, so the MCP server can read it on your behalf. Jira and Confluence are governed separately, and an Information Asset Owner decides each one.' %}
+{% set hasErrors = errorList and errorList.length %}
+{% set breadcrumbItems = [
+  { text: "Home", href: "/dashboard" },
+  { text: "Spaces", href: "/spaces" },
+  { text: "Request a space" }
+] %}
+{% set notesHeading = 'About requesting a space' %}
+{% set notes = [
+  {
+    title: "Who decides?",
+    html: 'The Information Asset Owner you name reviews the request and governs access on behalf of the MCP server. Name the person accountable for the information in the space, not your line manager.'
+  },
+  {
+    title: "Why choose products separately?",
+    html: 'The MCP server governs Jira and Confluence one at a time. The Information Asset Owner can approve the space for one and refuse it for the other, so ask only for what you need.'
+  },
+  {
+    title: "What happens if it is approved?",
+    html: 'The space can be used with the MCP server, for the approved products only, by anyone who already has access to it in Atlassian. Approval does not give anyone access to Atlassian itself.'
+  },
+  {
+    title: "How long does it take?",
+    html: 'There is no fixed turnaround. You can check where a request has got to at any time on the <a class="govuk-link" href="/spaces">Spaces</a> page.'
+  }
+] %}
+
+{#
+  Breadcrumbs only, so no back link. It read `backLink if backLink else "/spaces"`
+  and nothing ever set `backLink`, so arriving here from a space page via
+  `?spaceKey=` still sent the reader back to the full directory.
+#}
+{% block beforeHeading %}
+  {% if hasErrors %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: errorList
+    }) }}
+  {% endif %}
+{% endblock %}
+
+{% block pageBody %}
+  <form method="post" novalidate>
+
+    {{ govukInput({
+      label: { text: "Space key", classes: "govuk-label--m" },
+      hint: { text: "The short key that identifies the space. You can copy this from the space's URL in Jira or Confluence, for example FARM." },
+      id: "spaceKey",
+      name: "spaceKey",
+      value: spaceKey,
+      errorMessage: errors.spaceKey
+    }) }}
+
+    {# Items come from `constants/products.js` via the view model, so the form
+       and the wire body can never disagree about what a product is called. #}
+    {{ govukCheckboxes({
+      fieldset: {
+        legend: { text: "Which products do you need access to?", classes: "govuk-fieldset__legend--m" }
+      },
+      hint: { text: "The MCP server records approval separately for each one. Select every product you need." },
+      idPrefix: "products",
+      name: "products",
+      items: productItems,
+      errorMessage: errors.products
+    }) }}
+
+    {{ govukInput({
+      label: { text: "Information Asset Owner", classes: "govuk-label--m" },
+      hint: { text: "The person who will review this request. Must be a defra.gov.uk email address." },
+      id: "iao",
+      name: "iao",
+      type: "email",
+      spellcheck: false,
+      autocomplete: "off",
+      value: iao,
+      errorMessage: errors.iao
+    }) }}
+
+    {# `maxlength` mirrors MAX_REASON_LENGTH in `schemas.js`, so the counter and
+       the server-side rule agree. #}
+    {{ govukCharacterCount({
+      label: { text: "Reason for requesting this space", classes: "govuk-label--m" },
+      hint: { text: "Explain what you plan to use the space for through the MCP server, in at least 10 characters. The Information Asset Owner will read this." },
+      id: "reason",
+      name: "reason",
+      maxlength: 255,
+      value: reason,
+      errorMessage: errors.reason
+    }) }}
+
+    {{ govukButton({ text: "Submit request" }) }}
+  </form>
+{% endblock %}

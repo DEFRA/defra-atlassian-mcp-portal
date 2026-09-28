@@ -1,0 +1,40 @@
+services:
+  redis:
+    image: redis:7.2.3-alpine3.18
+    ports:
+      - '6379:6379'
+    restart: always
+    networks:
+      - jira-mcp-portal
+
+  atlassian-mcp-mock:
+    image: mockoon/cli:9.8.0
+    command: ['--data', '/data/atlassian-mcp.json', '--port', '8085']
+    volumes:
+      - ./mockoon:/data:ro
+    ports:
+      - '8085:8085'
+    networks:
+      - jira-mcp-portal
+
+  jira-mcp-portal:
+    build: ./
+    ports:
+      - '3000:3000'
+    env_file:
+      - '.env'
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      REDIS_HOST: redis
+      LOCALSTACK_ENDPOINT: http://localstack:4566
+      ATLASSIAN_MCP_URL: http://atlassian-mcp-mock:8085
+      USE_SINGLE_INSTANCE_CACHE: true
+    volumes:
+      - ./src:/home/node/src
+    networks:
+      - jira-mcp-portal
+
+networks:
+  jira-mcp-portal:
+    driver: bridge

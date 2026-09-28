@@ -1,0 +1,17 @@
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{#
+  Renders a personal access token's state as a coloured tag. A sibling of
+  `status-tag.njk`, kept separate because it reads a different vocabulary -
+  a token is Active, Expired or Revoked, and a space is Pending, Approved or
+  Rejected. Sharing one macro would mean a status map keyed across two
+  unrelated domains, where "Rejected" and "Revoked" could silently be handed
+  to the wrong one.
+
+  The wording and the colour come from `tokenStatusDisplay` in
+  `src/constants/token-statuses.js`, registered as a Nunjucks global by
+  `server/plugins/views.js`.
+#}
+{% macro appTokenStatusTag(status) %}
+  {{- govukTag({ text: status.label, classes: status.tagClasses }) -}}
+{% endmacro %}

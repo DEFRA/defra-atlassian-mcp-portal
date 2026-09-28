@@ -1,0 +1,29 @@
+{% from "govuk/components/accordion/macro.njk" import govukAccordion %}
+
+{% macro appNotes(notes, heading) %}
+  {% if notes and notes.length %}
+    <section class="app-notes">
+      <h2 class="govuk-heading-m">{{ heading if heading else "How this works" }}</h2>
+
+      {% if notes.length >= 3 %}
+        {%- set items = [] -%}
+        {%- for note in notes -%}
+          {%- set items = (items.push({
+            heading: { text: note.title },
+            content: { html: '<p class="govuk-body">' + note.html + '</p>' }
+          }), items) -%}
+        {%- endfor -%}
+        {{ govukAccordion({ id: "app-notes", items: items }) }}
+      {% else %}
+        {% for note in notes %}
+          {# A div, not a p: `note.html` is template-authored and may carry
+             block content, which cannot legally nest inside a paragraph. #}
+          <div class="govuk-inset-text app-notes__note">
+            <h3 class="govuk-heading-s">{{ note.title }}</h3>
+            <div class="govuk-body">{{ note.html | safe }}</div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </section>
+  {% endif %}
+{% endmacro %}

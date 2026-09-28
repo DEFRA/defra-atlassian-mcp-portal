@@ -1,0 +1,54 @@
+{% extends "common/layouts/content.njk" %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
+
+{% set title = 'Generate an access token' %}
+{% set caption = 'Access tokens' %}
+{% set description = 'You will be shown the token once, immediately after generating it.' %}
+{% set hasErrors = errorList and errorList.length %}
+{% set breadcrumbItems = [
+  { text: "Home", href: "/dashboard" },
+  { text: "Access tokens", href: "/account/tokens" },
+  { text: "Generate an access token" }
+] %}
+
+{% block beforeHeading %}
+  {% if hasErrors %}
+    {{ govukErrorSummary({
+      titleText: "There is a problem",
+      errorList: errorList
+    }) }}
+  {% endif %}
+{% endblock %}
+
+{% block pageBody %}
+  <form method="post" novalidate>
+    {{ govukInput({
+      label: { text: "What is this token for?", classes: "govuk-label--m" },
+      hint: { text: "Name it after the client you will use it in, such as “Claude Code on my laptop”. This is the only way to tell your tokens apart later." },
+      id: "label",
+      name: "label",
+      value: label,
+      errorMessage: errors.label if errors
+    }) }}
+
+    {{ govukRadios({
+      fieldset: {
+        legend: { text: "When should this token expire?", classes: "govuk-fieldset__legend--m" }
+      },
+      hint: { text: "A shorter life limits the damage if the token leaks. You can generate a new one at any time." },
+      idPrefix: "ttlDays",
+      name: "ttlDays",
+      items: expiryItems,
+      errorMessage: errors.ttlDays if errors
+    }) }}
+
+    {{ govukButton({ text: "Generate token" }) }}
+  </form>
+
+  <p class="govuk-body">
+    <a class="govuk-link" href="/account/tokens">Cancel</a>
+  </p>
+{% endblock %}

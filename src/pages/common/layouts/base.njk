@@ -1,0 +1,150 @@
+{% extends "govuk/template.njk" %}
+
+{% set navItems = [
+  { text: "Home", href: "/dashboard", prefix: "/dashboard" },
+  { text: "Spaces", href: "/spaces", prefix: "/spaces" },
+  { text: "Approvals to review", href: "/approvals", prefix: "/approvals", count: reviewCount },
+  { text: "Request a space", href: "/space-requests/new", prefix: "/space-requests" }
+] %}
+
+{% block head %}
+  <link href="{{ getAssetPath('src/client/stylesheets/application.scss') }}" rel="stylesheet">
+{% endblock %}
+
+{#
+  Overridden because the stock block builds `{{ assetPath }}/images/favicon.ico`,
+  and Vite emits these as flat, content-hashed files - there is no `images/`
+  directory under `.public/assets` at all, so every icon and the web manifest
+  404'd. `getAssetPath` reads the same Vite manifest the stylesheet and script
+  tags use, so the hashed names resolve.
+#}
+{% block headIcons %}
+  <link rel="icon" sizes="48x48" href="{{ getAssetPath('node_modules/govuk-frontend/dist/govuk/assets/images/favicon.ico') }}">
+  <link rel="icon" sizes="any" href="{{ getAssetPath('node_modules/govuk-frontend/dist/govuk/assets/images/favicon.svg') }}" type="image/svg+xml">
+  <link rel="mask-icon" href="{{ getAssetPath('node_modules/govuk-frontend/dist/govuk/assets/images/govuk-icon-mask.svg') }}" color="{{ themeColor }}">
+  <link rel="apple-touch-icon" href="{{ getAssetPath('node_modules/govuk-frontend/dist/govuk/assets/images/govuk-icon-180.png') }}">
+  <link rel="manifest" href="{{ getAssetPath('node_modules/govuk-frontend/dist/govuk/assets/manifest.json') }}">
+{% endblock %}
+
+{% block header %}
+  <header class="defra-header" role="banner">
+    <div class="defra-header__inner">
+      <div class="defra-header__brand-group">
+        <img
+          src="{{ getAssetPath('src/client/images/defra-logo.svg') }}"
+          alt="Department for Environment, Food &amp; Rural Affairs"
+          class="defra-header__logo"
+        />
+        <a href="/" class="defra-header__service-name">{{ serviceName }}</a>
+      </div>
+      <div class="defra-header__account">
+        {% if isAuthenticated %}
+          <svg class="defra-header__account-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="12" fill="currentColor" />
+            <circle cx="12" cy="9.5" r="3.5" fill="#ffffff" />
+            <path fill="#ffffff" d="M4.5 19.5c1.2-3.2 4-5 7.5-5s6.3 1.8 7.5 5c-1.9 2-4.6 3-7.5 3s-5.6-1-7.5-3z" />
+          </svg>
+          {#
+            The name is the way into the account area, which is where the two
+            things that belong to the person rather than to a space live -
+            their Atlassian connection and their access tokens. Tokens is the
+            destination because it is the one users come looking for; the
+            connection is reached from the home page and from every gate that
+            needs it.
+          #}
+          {% if userDisplayName %}
+            <a href="/account/tokens" class="defra-header__account-name">{{ userDisplayName }}</a>
+            <span class="defra-header__account-divider" aria-hidden="true"></span>
+          {% endif %}
+          <a href="/logout" class="defra-header__account-link">Sign out</a>
+        {% else %}
+          <a href="/" class="defra-header__account-link">Sign in</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  {% if isAuthenticated %}
+    <nav class="defra-service-navigation" aria-label="Site navigation">
+      <div class="defra-service-navigation__inner">
+        <button
+          type="button"
+          class="defra-service-navigation__toggle js-service-navigation-toggle"
+          aria-controls="site-navigation-list"
+          aria-expanded="false"
+          hidden
+        >Menu</button>
+        <ul class="defra-service-navigation__list" id="site-navigation-list">
+          {% for item in navItems %}
+            <li class="defra-service-navigation__item">
+              {#
+                `page` only for the page you are actually on. An ancestor - the
+                "Spaces" item while you are on `/spaces/FARM` - takes `true`,
+                which is what ARIA reserves for "this is the current item in a
+                set" as opposed to "this is the current page".
+              #}
+              <a
+                class="defra-service-navigation__link"
+                href="{{ item.href }}"
+                {%- if currentUrl == item.href %} aria-current="page"
+                {%- elif currentUrl and currentUrl.startsWith(item.prefix) %} aria-current="true"{% endif %}
+              >
+                {{ item.text }}
+                {%- if item.count %}
+                  <span class="defra-service-navigation__count">{{ item.count }}</span>
+                  <span class="govuk-visually-hidden">waiting on you</span>
+                {% endif %}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </nav>
+  {% endif %}
+{% endblock %}
+
+{% block pageTitle %}
+  {{ "Error: " if hasErrors }}{{ pageTitle if pageTitle else serviceName }} | {{ serviceName }}
+{% endblock %}
+
+{% block container %}
+  {% block bleed %}{% endblock %}
+
+  <div class="govuk-width-container">
+    {% block beforeContent %}{% endblock %}
+    <main class="govuk-main-wrapper" id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+{% endblock %}
+
+{% block footer %}
+  <footer class="defra-footer" role="contentinfo">
+    <div class="govuk-width-container">
+      <div class="defra-footer__meta">
+        <div class="defra-footer__meta-item">
+          <ul class="defra-footer__inline-list">
+            {% if aceSlackChannel %}
+              <li class="defra-footer__inline-list-item">
+                <a class="defra-footer__link" href="{{ aceSlackChannel }}">Get help on #ask-ace</a>
+              </li>
+            {% endif %}
+            <li class="defra-footer__inline-list-item">
+              <a class="defra-footer__link" href="mailto:AICapabilityAndEnablement@defra.gov.uk">Contact the AICE team</a>
+            </li>
+          </ul>
+        </div>
+        <div class="defra-footer__meta-item">
+          <p class="defra-footer__licence-description">
+            Built and run by the AI Capability and Enablement team,
+            Department for Environment, Food &amp; Rural Affairs.
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+{% endblock %}
+
+{% block bodyEnd %}
+  <script type="module" src="{{ getAssetPath('src/client/javascripts/application.js') }}"></script>
+{% endblock %}

@@ -1,21 +1,22 @@
-import convict from 'convict'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import url from 'node:url'
 
-import convictFormatWithValidator from 'convict-format-with-validator'
+import convict from 'convict'
 
-const dirname = path.dirname(fileURLToPath(import.meta.url))
+import * as formats from './formats.js'
 
-const fourHoursMs = 14400000
+const dirname = path.dirname(url.fileURLToPath(import.meta.url))
+
+const oneDayMs = 86400000
 const oneWeekMs = 604800000
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isTest = process.env.NODE_ENV === 'test'
 const isDevelopment = process.env.NODE_ENV === 'development'
 
-convict.addFormats(convictFormatWithValidator)
+convict.addFormats(formats)
 
-export const config = convict({
+const config = convict({
   serviceVersion: {
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
     format: String,
@@ -44,7 +45,7 @@ export const config = convict({
   serviceName: {
     doc: 'Applications Service Name',
     format: String,
-    default: 'defra-atlassian-mcp-portal'
+    default: 'Atlassian MCP Portal'
   },
   root: {
     doc: 'Project root',
@@ -56,6 +57,12 @@ export const config = convict({
     format: String,
     default: '/public',
     env: 'ASSET_PATH'
+  },
+  env: {
+    doc: 'The application environment',
+    format: ['production', 'development', 'test'],
+    default: 'development',
+    env: 'NODE_ENV'
   },
   isProduction: {
     doc: 'If this application running in the production environment',
@@ -96,8 +103,7 @@ export const config = convict({
       format: Array,
       default: isProduction
         ? ['req.headers.authorization', 'req.headers.cookie', 'res.headers']
-        : [],
-      env: 'LOG_REDACT'
+        : []
     }
   },
   httpProxy: {
@@ -130,7 +136,7 @@ export const config = convict({
       ttl: {
         doc: 'server side session cache ttl',
         format: Number,
-        default: fourHoursMs,
+        default: oneDayMs,
         env: 'SESSION_CACHE_TTL'
       }
     },
@@ -138,7 +144,7 @@ export const config = convict({
       ttl: {
         doc: 'Session cookie ttl',
         format: Number,
-        default: fourHoursMs,
+        default: oneDayMs,
         env: 'SESSION_COOKIE_TTL'
       },
       password: {
@@ -179,7 +185,7 @@ export const config = convict({
     keyPrefix: {
       doc: 'Redis cache key prefix name used to isolate the cached results across multiple clients',
       format: String,
-      default: 'defra-atlassian-mcp-portal:',
+      default: 'mcp-registry:',
       env: 'REDIS_KEY_PREFIX'
     },
     useSingleInstanceCache: {
@@ -207,6 +213,101 @@ export const config = convict({
       default: isDevelopment
     }
   },
+  cdpUploader: {
+    url: {
+      doc: 'CDP Uploader base URL for server-to-server calls. Only required in development to target the local emulator',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'CDP_UPLOADER_BASE_URL'
+    },
+    browserUrl: {
+      doc: 'CDP Uploader base URL for browser form submission. Only required in development to target the local emulator',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'CDP_UPLOADER_BROWSER_URL'
+    }
+  },
+  atlassianMcp: {
+    url: {
+      doc: 'Atlassian MCP API base URL',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'ATLASSIAN_MCP_URL'
+    },
+    publicUrl: {
+      doc: 'Atlassian MCP public base URL',
+      format: String,
+      nullable: true,
+      default: '#',
+      env: 'ATLASSIAN_MCP_PUBLIC_URL'
+    }
+  },
+  auth: {
+    provider: {
+      doc: 'Authentication provider to use',
+      format: process.env.NODE_ENV === 'production' ? ['entra'] : ['entra', 'local'],
+      default: 'entra',
+      env: 'AUTH_PROVIDER'
+    },
+    entra: {
+      tenantId: {
+        doc: 'Entra ID (Azure AD) tenant ID (GUID) that issues tokens for this app registration',
+        format: String,
+        default: null,
+        nullable: process.env.NODE_ENV !== 'production',
+        env: 'ENTRA_TENANT_ID'
+      },
+      clientId: {
+        doc: 'Entra ID application (client) ID registered for this portal',
+        format: String,
+        default: null,
+        nullable: process.env.NODE_ENV !== 'production',
+        env: 'ENTRA_CLIENT_ID'
+      },
+      clientSecret: {
+        doc: 'Entra ID application client secret',
+        format: String,
+        default: null,
+        nullable: process.env.NODE_ENV !== 'production',
+        env: 'ENTRA_CLIENT_SECRET',
+        sensitive: true
+      },
+      authorityHost: {
+        doc: 'Entra authority host used to build the authorize/token/JWKS/logout endpoints',
+        format: String,
+        default: 'https://login.microsoftonline.com',
+        env: 'ENTRA_AUTHORITY_HOST'
+      },
+      redirectHost: {
+        doc: 'Entra redirect host used to build the redirect URI for the OIDC flow',
+        format: String,
+        default: null,
+        nullable: process.env.NODE_ENV !== 'production',
+        env: 'ENTRA_REDIRECT_HOST'
+      },
+      useRefreshTokens: {
+        doc: 'Whether to refresh expired Entra ID tokens using the stored refresh token instead of forcing re-login',
+        format: Boolean,
+        default: false,
+        env: 'ENTRA_USE_REFRESH_TOKENS'
+      },
+      refreshTokenAcquisitionTimeout: {
+        doc: 'Timeout in milliseconds for acquiring a new access token using the refresh token.',
+        format: Number,
+        default: 5000,
+        env: 'ENTRA_REFRESH_TOKEN_ACQUISITION_TIMEOUT'
+      }
+    }
+  },
+  aceSlackChannel: {
+    doc: 'Ask ACE Slack channel URL',
+    format: String,
+    default: '#',
+    env: 'ACE_SLACK_CHANNEL_URL'
+  },
   tracing: {
     header: {
       doc: 'Which header to track',
@@ -218,3 +319,7 @@ export const config = convict({
 })
 
 config.validate({ allowed: 'strict' })
+
+export {
+  config
+}
