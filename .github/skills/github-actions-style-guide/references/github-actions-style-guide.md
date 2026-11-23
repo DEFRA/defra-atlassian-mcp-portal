@@ -19,9 +19,8 @@ This page outlines the style guide / coding conventions for GitHub Actions workf
   - [1.3 Third-Party Actions](#13-third-party-actions)
   - [1.4 Security Scanning](#14-security-scanning)
     - [1.4.1 scan.yml — Reusable Scan Workflow](#141-scanyml--reusable-scan-workflow)
-    - [1.4.2 Trivy Vulnerability Scanning](#142-trivy-vulnerability-scanning)
-    - [1.4.3 SonarCloud Code Scanning](#143-sonarcloud-code-scanning)
-    - [1.4.4 Unpinned Dependency Check](#144-unpinned-dependency-check)
+    - [1.4.2 SonarCloud Code Scanning](#142-sonarcloud-code-scanning)
+    - [1.4.3 Unpinned Dependency Check](#143-unpinned-dependency-check)
 
 ## 1 GitHub Actions Project Rules
 
@@ -51,10 +50,10 @@ All AICE projects must have at minimum the following workflows:
 `scan.yml` is a **reusable workflow** that is called by `check-pull-request.yml`, `publish.yml` and `publish-hotfix.yml`. It also runs on a nightly schedule as a standalone scan. This pattern ensures security scanning runs consistently at every stage of the delivery pipeline.
 
 See the following for reference implementations:
-- [scan.yml](https://github.com/DEFRA/rag-evaluation-runtime/blob/main/.github/workflows/scan.yml)
-- [check-pull-request.yml](https://github.com/DEFRA/rag-evaluation-runtime/blob/main/.github/workflows/check-pull-request.yml)
-- [publish.yml](https://github.com/DEFRA/rag-evaluation-runtime/blob/main/.github/workflows/publish.yml)
-- [publish-hotfix.yml](https://github.com/DEFRA/rag-evaluation-runtime/blob/main/.github/workflows/publish-hotfix.yml)
+- [scan.yml](https://github.com/DEFRA/ai-uc-rag-evaluation-runtime/blob/main/.github/workflows/scan.yml)
+- [check-pull-request.yml](https://github.com/DEFRA/ai-uc-rag-evaluation-runtime/blob/main/.github/workflows/check-pull-request.yml)
+- [publish.yml](https://github.com/DEFRA/ai-uc-rag-evaluation-runtime/blob/main/.github/workflows/publish.yml)
+- [publish-hotfix.yml](https://github.com/DEFRA/ai-uc-rag-evaluation-runtime/blob/main/.github/workflows/publish-hotfix.yml)
 
 ### 1.2 Security
 
@@ -113,6 +112,33 @@ Don't do this:
 # No pin at all
 - uses: actions/checkout@main
 ```
+
+Dependabot must be configured for the `github-actions` ecosystem in `.github/dependabot.yml` so pinned SHAs are kept up to date. It updates the SHA and the version comment together:
+
+```yaml
+- package-ecosystem: github-actions
+  directory: /
+
+  # Wait 7 days after release before raising an update
+  cooldown:
+    default-days: 7
+
+  # Group all GitHub Actions updates into one PR per run
+  groups:
+    github-actions:
+      patterns:
+        - '*'
+
+  schedule:
+    interval: weekly
+    time: '10:30'
+    timezone: 'Europe/London'
+```
+
+> [!NOTE]
+> **Group the updates.** The `groups` entry bundles all GitHub Actions into a single PR per Dependabot run, keeping steady upkeep rather than one pull request per action.
+
+See the [Docker Style Guide](./docker.md#14-dependabot) for the equivalent rules for container images.
 
 ### 1.4 Security Scanning
 
